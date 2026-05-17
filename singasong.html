@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>웹 노래방</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+body{
+    overflow:hidden;
+    background:#fff;
+}
+
+/* =======================
+   공통
+======================= */
+
+.screen{
+    width:100vw;
+    height:100vh;
+    display:none;
+}
+
+.screen.active{
+    display:flex;
+}
+
+/* =======================
+   키오스크
+======================= */
+
+.kiosk-wrap{
+    width:100%;
+    height:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:
+    radial-gradient(circle at top left,#ececec,transparent 30%),
+    radial-gradient(circle at bottom right,#dcdcdc,transparent 30%);
+}
+
+.kiosk{
+    width:520px;
+    height:820px;
+    background:white;
+    border-radius:45px;
+    padding:25px;
+    box-shadow:
+    0 30px 80px rgba(0,0,0,0.15),
+    inset 0 0 0 10px #ececec;
+    display:flex;
+    flex-direction:column;
+}
+
+.kiosk-top{
+    width:120px;
+    height:10px;
+    background:#ddd;
+    border-radius:999px;
+    margin:auto;
+    margin-bottom:20px;
+}
+
+.title{
+    font-size:34px;
+    font-weight:800;
+    color:#111;
+}
+
+.sub{
+    color:#888;
+    margin-top:10px;
+}
+
+.room-map{
+    flex:1;
+    margin-top:20px;
+    background:#f5f5f5;
+    border-radius:35px;
+    padding:25px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+}
+
+.room{
+    background:white;
+    border-radius:25px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:28px;
+    font-weight:700;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.room:hover{
+    transform:translateY(-3px);
+}
+
+.room.selected{
+    background:#111;
+    color:white;
+}
+
+.option-section{
+    margin-top:20px;
+}
+
+.option-title{
+    font-size:22px;
+    font-weight:700;
+    margin-bottom:15px;
+}
+
+.remain-box{
+    position:absolute;
+    top:20px;
+    right:25px;
+    z-index:20;
+
+    padding:14px 22px;
+
+    border-radius:18px;
+
+    background:rgba(0,0,0,0.55);
+
+    backdrop-filter:blur(10px);
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    color:white;
+
+    font-size:18px;
+    font-weight:700;
+
+    box-shadow:
+    0 8px 20px rgba(0,0,0,0.3);
+}
+
+.option-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+.option-btn{
+    height:75px;
+    border:none;
+    border-radius:25px;
+    background:#f5f5f5;
+    font-size:25px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.option-btn.selected{
+    background:#111;
+    color:white;
+}
+
+.next-btn{
+    margin-top:25px;
+    height:70px;
+    border:none;
+    border-radius:25px;
+    background:#111;
+    color:white;
+    font-size:28px;
+    font-weight:800;
+    cursor:pointer;
+}
+
+/* =======================
+   노래방
+======================= */
+
+.karaoke-screen{
+    width:100%;
+    height:100%;
+    position:relative;
+    background:
+    radial-gradient(circle at center,#222 0%,#000 70%);
+    overflow:hidden;
+}
+
+/* 미러볼 빛 */
+
+.light{
+    position:absolute;
+    width:600px;
+    height:600px;
+    border-radius:50%;
+    filter:blur(80px);
+    opacity:0.25;
+    animation:spin 8s linear infinite;
+}
+
+.light1{
+    background:#00aaff;
+    top:-200px;
+    left:-100px;
+}
+
+.light2{
+    background:#ff00ff;
+    bottom:-250px;
+    right:-150px;
+    animation-direction:reverse;
+}
+
+@keyframes spin{
+    from{
+        transform:rotate(0deg);
+    }
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+/* TV */
+
+.tv-wrap{
+    width:100%;
+    height:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    position:relative;
+    z-index:5;
+}
+
+.tv{
+    width:1200px;
+    height:700px;
+    background:#111;
+    border-radius:40px;
+    padding:25px;
+    box-shadow:
+    0 0 40px rgba(255,255,255,0.1);
+    border:10px solid #222;
+    position:relative;
+}
+
+.tv-screen{
+    width:100%;
+    height:100%;
+    background:black;
+    border-radius:25px;
+    overflow:hidden;
+    position:relative;
+    
+}
+
+
+.lyrics-box{
+    position:absolute;
+
+    left:50%;
+    bottom:70px;
+
+    transform:translateX(-50%);
+
+    width:90%;
+
+    text-align:center;
+
+    font-size:42px;
+    font-weight:800;
+
+    color:white;
+
+    text-shadow:
+    0 4px 20px rgba(0,0,0,0.8);
+
+    z-index:30;
+
+    pointer-events:none;
+
+    transition:0.2s;
+}
+/* 메뉴 */
+
+.menu{
+    position:absolute;
+    top:25px;
+    left:25px;
+    right:25px;
+    display:flex;
+    gap:15px;
+    z-index:10;
+}
+
+.menu-btn{
+    padding:15px 25px;
+    border-radius:18px;
+    background:rgba(255,255,255,0.1);
+    backdrop-filter:blur(10px);
+    color:white;
+    border:1px solid rgba(255,255,255,0.1);
+    cursor:pointer;
+    font-size:18px;
+    font-weight:700;
+}
+
+/* 곡 리스트 */
+
+.song-list{
+    position:absolute;
+    top:90px;
+    left:25px;
+    right:25px;
+    bottom:25px;
+    overflow:auto;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+    padding-right:10px;
+}
+
+.song{
+    background:rgba(255,255,255,0.08);
+    border-radius:20px;
+    padding:20px;
+    color:white;
+    cursor:pointer;
+    transition:0.2s;
+    border:1px solid rgba(255,255,255,0.08);
+}
+
+.song:hover{
+    transform:scale(1.02);
+    background:rgba(255,255,255,0.12);
+}
+
+.song-title{
+    font-size:24px;
+    font-weight:700;
+}
+
+.song-artist{
+    margin-top:8px;
+    color:#bbb;
+}
+
+.ending-screen{
+    position:absolute;
+    inset:0;
+    z-index:50;
+
+    background:
+    radial-gradient(circle at center,#222,#000);
+
+    display:none;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+
+    color:white;
+}
+
+.ending-title{
+    font-size:70px;
+    font-weight:900;
+}
+
+.ending-sub{
+    margin-top:15px;
+    font-size:26px;
+    color:#aaa;
+}
+
+.ending-list{
+    margin-top:40px;
+
+    width:700px;
+    max-height:400px;
+
+    overflow:auto;
+}
+
+.ending-item{
+    background:rgba(255,255,255,0.08);
+
+    padding:20px 25px;
+
+    border-radius:20px;
+
+    margin-bottom:15px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    font-size:28px;
+}
+/* 검색 */
+
+.remote{
+    margin-top:25px;
+    display:flex;
+    gap:15px;
+}
+
+.remote button{
+    width:220px;
+    height:70px;
+    border:none;
+    border-radius:20px;
+    background:#1f1f1f;
+    color:white;
+    font-size:22px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+/* 영상 */
+
+/* 점수 */
+
+.score-screen{
+    position:absolute;
+    inset:0;
+    background:black;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    color:white;
+    z-index:30;
+}
+
+.score-title{
+    font-size:40px;
+    color:#aaa;
+}
+
+.score{
+    font-size:180px;
+    font-weight:900;
+    margin-top:20px;
+}
+
+
+#player{
+
+    position:absolute;
+
+    inset:0;
+
+    width:100%;
+    height:100%;
+
+    object-fit:cover;
+
+    border-radius:35px;
+
+    background:black;
+
+    z-index:1;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ======================
+     키오스크
+====================== -->
+
+<div class="screen active" id="kioskScreen">
+
+    <div class="kiosk-wrap">
+
+        <div class="kiosk">
+
+            <div class="kiosk-top"></div>
+
+            <div class="title">
+                방 선택
+            </div>
+
+            <div class="sub">
+                원하는 방을 선택해주세요
+            </div>
+
+            <div class="room-map">
+
+                <div class="room" onclick="selectRoom(this)">
+                    ROOM 1
+                </div>
+
+                <div class="room" onclick="selectRoom(this)">
+                    ROOM 2
+                </div>
+
+                <div class="room" onclick="selectRoom(this)">
+                    ROOM 3
+                </div>
+
+                <div class="room" onclick="selectRoom(this)">
+                    ROOM 4
+                </div>
+
+            </div>
+
+            <div class="option-section">
+
+                <div class="option-title">
+                    시간제
+                </div>
+
+                <div class="option-grid">
+
+                    <button class="option-btn">10분</button>
+                    <button class="option-btn">30분</button>
+                    <button class="option-btn">1시간</button>
+                    <button class="option-btn">2시간</button>
+
+                </div>
+
+            </div>
+
+            <div class="option-section">
+
+                <div class="option-title">
+                    곡 수
+                </div>
+
+                <div class="option-grid">
+
+                    <button class="option-btn">5곡</button>
+                    <button class="option-btn">10곡</button>
+                    <button class="option-btn">20곡</button>
+                    <button class="option-btn">30곡</button>
+
+                </div>
+
+            </div>
+
+            <button class="next-btn" onclick="enterKaraoke()">
+                결제하기 →
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ======================
+     노래방
+====================== -->
+
+<div class="screen" id="karaokeScreen">
+
+    <div class="karaoke-screen">
+
+        <div class="light light1"></div>
+        <div class="light light2"></div>
+
+        <div class="tv-wrap">
+
+            <div class="tv">
+
+                <div class="tv-screen">
+
+                    <!-- 메뉴 -->
+
+                    <!-- 남은 시간 / 곡 -->
+
+                    <div class="remain-box" id="remainBox">
+
+                        ⏰ 남은 시간 : 30분
+
+                    </div>
+
+                    <div class="menu">
+
+                        <button class="menu-btn"
+                            onclick="showCategory('인기')">
+                            인기
+                        </button>
+
+                        <button class="menu-btn"
+                            onclick="showCategory('힙합')">
+                            힙합
+                        </button>
+
+                        <button class="menu-btn"
+                            onclick="showCategory('가요')">
+                            가요
+                        </button>
+
+                        <button class="menu-btn"
+                            onclick="showCategory('팝')">
+                            팝
+                        </button>
+
+                        <button class="menu-btn"
+                            onclick="showCategory('댄스')">
+                            댄스
+                        </button>
+
+                        <button class="menu-btn"
+                            onclick="showCategory('OST')">
+                            OST
+                        </button>
+
+                        <button class="menu-btn"
+                            onclick="showCategory('락')">
+                            락/메탈
+                        </button>
+
+                        <button class="menu-btn"
+                            onclick="showCategory('랄')">
+                            RnB
+                        </button>
+                    </div>
+
+                    <!-- 곡 리스트 -->
+
+                    <div class="song-list"
+                        id="songList">
+                    </div>
+
+                    <!-- 영상 -->
+
+                   <video
+                        id="player"
+                        style="display:none"
+                        autoplay>
+                    </video>
+
+                    <!-- 점수 -->
+
+                    <div class="score-screen"
+                        id="scoreScreen">
+
+                        <div class="score-title">
+                            FINAL SCORE
+                        </div>
+
+                        <div class="score"
+                            id="scoreText">
+                            95
+                        </div>
+
+                    </div>
+                    <div class="lyrics-box"
+                        id="lyricsBox"></div>
+
+                </div>
+
+            </div>
+
+            <!-- 리모컨 -->
+
+            <div class="remote">
+
+                <button onclick="searchSong()">
+                    제목 검색
+                </button>
+
+                <button onclick="searchSong()">
+                    가수 검색
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- 종료 화면 -->
+
+    <div class="ending-screen"
+      id="endingScreen">
+
+      <div class="ending-title">
+          🎤 감사합니다
+      </div>
+
+      <div class="ending-sub">
+          오늘의 기록
+      </div>
+
+      <div class="ending-list"
+          id="endingList">
+      </div>
+
+    </div>
+
+</div>
+
+<script>
+let playedSongs = [];
+let selectedMode = null;
+let remainValue = 0;
+let remainTimer = null;
+let currentSongData = null;
+let lyricsInterval = null;
+const songs = [
+//https://www.youtube.com/embed/
+{
+    title:"Drowning",
+    artist:"WOODZ(조승연)",
+    category:"인기",
+    video:"video/drowning.mp4",
+    lyrics:[
+            {
+                time:18,
+                text:"미치도록 사랑했던"
+            },
+            {
+                time:23,
+                text:"지겹도록 다투었던"
+            },
+            {
+                time:28,
+                text:"네가 먼저 떠나고"
+            },
+            {
+                time:35,
+                text:"여긴 온종일 비가 왔어"
+            },
+            {
+                time:40,
+                text:"금세 턱 끝까지 차올랐고"
+            },
+            {
+                time:45,
+                text:"숨이 막혀와"
+            },
+            {
+                time:50,
+                text:"Oh, 내 맘이란 추는 나를 더 깊게"
+            },
+            {
+                time:55,
+                text:"더 깊게 붙잡아"
+            },
+            {
+                time:59,
+                text:"Oh, I'm drowning"
+            },
+            {
+                time:63,
+                text:"It's raining all day, yeah-yeah (yeah)"
+            },
+            {
+                time:71,
+                text:"I can't (yeah) breathe"
+            },
+            {
+                time:78,
+                text:"Oh-oh, I'm drowning, oh, I'm drowning"
+            },
+            {
+                time:83,
+                text:"Oh, I'm drowning, oh, I'm drowning"
+            },
+            {
+                time:88,
+                text:"You're taking my life from me"
+            },
+            {
+                time:96,
+                text:"다 알면서 눈 감은 넌 왜?"
+            },
+            {
+                time:100,
+                text:"다정한 말로 나를 죽여놓고"
+            },
+            {
+                time:105,
+                text:"날 누이고 너는 떠나갔지"
+            },
+            {
+                time:110,
+                text:"You cut me bad, I'm still waiting for you"
+            },
+            {
+                time:114,
+                text:"너 떠나고 이곳은 잠겨 눈물로"
+            },
+            {
+                time:119,
+                text:"날 너무 사랑했던 넌 어디로 흩어졌는지?"
+            },
+            {
+                time:129,
+                text:"Oh, 내 맘이란 추는 나를 더 깊게"
+            },
+            {
+                time:133,
+                text:"더 깊게 붙잡아"
+            },
+            {
+                time:138,
+                text:"Oh, I'm drowning"
+            },
+            {
+                time:142,
+                text:"It's raining all day, yeah-yeah (yeah)"
+            },
+            {
+                time:149,
+                text:"I can't (yeah) breathe, yeah"
+            },
+            {
+                time:157,
+                text:"Oh-oh, I'm drowning, oh, I'm drowning"
+            },
+            {
+                time:161,
+                text:"Oh, I'm drowning, oh, I'm drowning"
+            },
+            {
+                time:166,
+                text:"You're taking my life from me"
+            },
+            {
+                time:174,
+                text:""
+            },
+            {
+                time:188,
+                text:"더 깊이 빠져 죽어도 되니까"
+            },
+            {
+                time:193,
+                text:"다시 한번만 돌아와 줄래?"
+            },
+            {
+                time:198,
+                text:"더 깊이 빠져 죽어도 되니까"
+            },
+            {
+                time:202,
+                text:"다시 한번만 (다시 한번만)"
+            },
+            {
+                time:206,
+                text:"Oh, I'm drowning"
+            },
+            {
+                time:210,
+                text:"It's raining all day, yeah-yeah (yeah)"
+            },
+            {
+                time:217,
+                text:"I can't (yeah) breathe, yeah"
+            },
+            {
+                time:225,
+                text:"Oh-oh, I'm drowning, oh, I'm drowning"
+            },
+            {
+                time:230,
+                text:"Oh, I'm drowning, oh, I'm drowning"
+            },
+            {
+                time:235,
+                text:"You're taking my life from me"
+            },
+            {
+                time:242,
+                text:""
+            }
+            ]
+},
+{
+    title:"0+0",
+    artist:"한로로",
+    category:"인기",
+    video:"video/zero.mp4",
+    lyrics:[
+                {
+            time:14,
+            text:"검은 눈동자의"
+        },
+        {
+            time:20,
+            text:"사각지대를 찾으러 가자"
+        },
+        {
+            time:26,
+            text:"여름 코코아, 겨울 수박도"
+        },
+        {
+            time:33,
+            text:"혼나지 않는 파라다이스"
+        },
+        {
+            time:42,
+            text:"앞서 가는 너의 머리가"
+        },
+        {
+            time:48,
+            text:"두 볼을 간지럽힐 때"
+        },
+        {
+            time:52,
+            text:"나의 내일이 뛰어오네"
+        },
+        {
+            time:56,
+            text:"난 널 버리지 않아"
+        },
+        {
+            time:62,
+            text:"너도 같은 생각이지?"
+        },
+        {
+            time:70,
+            text:"저 너머의 우리는"
+        },
+        {
+            time:76,
+            text:"결코 우리가 될 수 없단다"
+        },
+        {
+            time:84,
+            text:"영생과 영면의"
+        },
+        {
+            time:91,
+            text:"차이를 너는 알고 있니?"
+        },
+        {
+            time:96,
+            text:"멍든 발목을 꺾으려 해도"
+        },
+        {
+            time:103,
+            text:"망설임 없이 태어나는 꿈"
+        },
+        {
+            time:116,
+            text:"난 널 버리지 않아 (버리지 않아)"
+        },
+        {
+            time:122,
+            text:"너도 같은 생각이지? (Ah)"
+        },
+        {
+            time:130,
+            text:"저 너머의 우리는"
+        },
+        {
+            time:136,
+            text:"결코 우리가 될 수 없단다, ah"
+        },
+        {
+            time:144,
+            text:"난 널 버리지 않아 (버리지 않아)"
+        },
+        {
+            time:151,
+            text:"너도 같은 생각이지? (Ah)"
+        },
+        {
+            time:158,
+            text:"난 우리를 영영 잃지 않아"
+        },
+        {
+            time:165,
+            text:"너도 영영 그럴 거지?"
+        }
+    ]
+}
+
+];
+
+function selectRoom(el){
+
+    document.querySelectorAll(".room")
+    .forEach(r=>r.classList.remove("selected"));
+
+    el.classList.add("selected");
+}
+
+document.querySelectorAll(".option-btn")
+.forEach(btn=>{
+
+    btn.onclick = ()=>{
+
+        document.querySelectorAll(".option-btn")
+        .forEach(b=>b.classList.remove("selected"));
+
+        btn.classList.add("selected");
+
+        const text = btn.innerText;
+
+        selectedMode = text;
+
+        remainValue = text;
+    };
+});
+
+function enterKaraoke(){
+
+    document.getElementById("kioskScreen")
+    .classList.remove("active");
+
+    document.getElementById("karaokeScreen")
+    .classList.add("active");
+
+    showCategory("인기");
+    updateRemainUI();
+
+    startRemainSystem();
+}
+
+function showCategory(category){
+
+    const list =
+        document.getElementById("songList");
+
+    list.style.display = "grid";
+
+    list.innerHTML = "";
+
+    songs
+    .filter(song=>song.category===category)
+    .forEach(song=>{
+
+        list.innerHTML += `
+            <div class="song"
+                onclick="playSong('${song.video}','${song.title}')">
+
+                <div class="song-title">
+                    ${song.title}
+                </div>
+
+                <div class="song-artist">
+                    ${song.artist}
+                </div>
+
+            </div>
+        `;
+    });
+}
+
+function searchSong(){
+
+    const keyword =
+        prompt("검색어 입력");
+
+    if(!keyword) return;
+
+    const result =
+        songs.filter(song=>
+
+            song.title.toLowerCase()
+            .includes(keyword.toLowerCase())
+
+            ||
+
+            song.artist.toLowerCase()
+            .includes(keyword.toLowerCase())
+        );
+
+    const list =
+        document.getElementById("songList");
+
+    list.innerHTML = "";
+
+    result.forEach(song=>{
+
+        list.innerHTML += `
+            <div class="song"
+                onclick="playSong('${song.video}','${song.title}')">
+
+                <div class="song-title">
+                    ${song.title}
+                </div>
+
+                <div class="song-artist">
+                    ${song.artist}
+                </div>
+
+            </div>
+        `;
+    });
+}
+
+function playSong(video, title="알 수 없음"){
+
+    const song =
+        songs.find(s=>s.title===title);
+
+    currentSongData = song;
+
+    playedSongs.push({
+        title,
+        score:0
+    });
+
+    const player =
+        document.getElementById("player");
+
+    const list =
+        document.getElementById("songList");
+
+    const lyricsBox =
+        document.getElementById("lyricsBox");
+
+    // 리스트 숨김
+
+    list.style.display = "none";
+
+    // 영상 표시
+
+    player.style.display = "block";
+
+    // 영상 로드
+
+    player.src = video;
+
+    player.currentTime = 0;
+
+    // 재생
+
+    player.play();
+
+    // 가사 초기화
+
+    lyricsBox.innerText = "";
+
+    // 가사 시작
+
+    startLyrics();
+
+    // 영상 끝
+
+    player.onended = ()=>{
+
+        clearInterval(lyricsInterval);
+
+        lyricsBox.innerText = "";
+
+        showScore();
+    };
+}
+
+function showScore(){
+
+    const score =
+        Math.floor(Math.random()*21)+80;
+    
+    if(playedSongs.length > 0){
+
+        playedSongs[
+            playedSongs.length - 1
+        ].score = score;
+    }
+
+    const scoreScreen =
+        document.getElementById("scoreScreen");
+
+    document.getElementById("scoreText")
+    .innerText = score;
+
+    scoreScreen.style.display = "flex";
+
+    setTimeout(()=>{
+        // 곡수 모드면 감소
+
+        if(
+            selectedMode.includes("곡")
+        ){
+
+            remainValue--;
+
+            updateRemainUI();
+
+            if(remainValue <= 0){
+
+                showEndingScreen();
+            }
+        }
+        scoreScreen.style.display = "none";
+
+        showCategory("인기");
+
+    },3000);
+}
+function updateRemainUI(){
+
+    const box =
+        document.getElementById("remainBox");
+
+    if(!selectedMode){
+
+        box.innerText = "선택 없음";
+        return;
+    }
+
+    // 시간제
+
+    if(
+        selectedMode.includes("분")
+        ||
+        selectedMode.includes("시간")
+    ){
+
+        box.innerText =
+            `⏰ 남은 시간 : ${remainValue}`;
+    }
+
+    // 곡수
+
+    else{
+
+        box.innerText =
+            `🎵 남은 곡 : ${remainValue}`;
+    }
+}
+
+function startRemainSystem(){
+
+    clearInterval(remainTimer);
+
+    // 시간제
+
+    if(
+        selectedMode.includes("분")
+        ||
+        selectedMode.includes("시간")
+    ){
+
+        let totalMinutes = 0;
+
+        if(selectedMode==="10분") totalMinutes=10;
+        if(selectedMode==="30분") totalMinutes=30;
+        if(selectedMode==="1시간") totalMinutes=60;
+        if(selectedMode==="2시간") totalMinutes=120;
+
+        remainTimer = setInterval(()=>{
+
+            totalMinutes--;
+
+            if(totalMinutes <= 0){
+
+                clearInterval(remainTimer);
+
+                alert("이용 시간이 종료되었습니다");
+                return;
+            }
+
+            remainValue = `${totalMinutes}분`;
+
+            updateRemainUI();
+
+        },60000);
+    }
+
+    // 곡수
+
+    else{
+
+        remainValue =
+            parseInt(selectedMode);
+
+        updateRemainUI();
+    }
+}
+
+function showEndingScreen(){
+
+    const ending =
+        document.getElementById("endingScreen");
+
+    const list =
+        document.getElementById("endingList");
+
+    list.innerHTML = "";
+
+    playedSongs.forEach(song=>{
+
+        list.innerHTML += `
+
+            <div class="ending-item">
+
+                <div>
+                    🎵 ${song.title}
+                </div>
+
+                <div>
+                    ${song.score}점
+                </div>
+
+            </div>
+        `;
+    });
+
+    ending.style.display = "flex";
+
+    // 30초 뒤 초기화
+
+    setTimeout(()=>{
+
+        location.reload();
+
+    },30000);
+}
+function startLyrics(){
+
+    clearInterval(lyricsInterval);
+
+    const player =
+        document.getElementById("player");
+
+    const box =
+        document.getElementById("lyricsBox");
+
+    lyricsInterval = setInterval(()=>{
+
+        if(!currentSongData) return;
+
+        const current =
+            player.currentTime;
+
+        let currentText = "";
+
+        currentSongData.lyrics.forEach(line=>{
+
+            if(current >= line.time){
+
+                currentText = line.text;
+            }
+        });
+
+        box.innerText = currentText;
+
+    },100);
+}
+</script>
+
+</body>
+</html>
